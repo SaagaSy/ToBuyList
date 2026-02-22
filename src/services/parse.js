@@ -1,9 +1,9 @@
 // Connect to backend
-import Parse from "parse/dist/parse.min.js";
+import Parse from "parse";
 
 Parse.initialize(
-  "YCi6zulR0FnnJqQNRTuK33N2473lO53B7y7zRvhxN",
-  "Y7M5eBYLxbTFHWMdI54oUYfXImPZvltFTmxVBAMdV"
+  "Ci6zulR0FnnJqQNRTuK33N2473lO53B7y7zRvhxN",
+  "7M5eBYLxbTFHWMdI54oUYfXImPZvltFTmxVBAMdV"
 );
 
 Parse.serverURL = "https://parseapi.back4app.com";
