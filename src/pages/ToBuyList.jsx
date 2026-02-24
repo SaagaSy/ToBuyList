@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import Parse from "../services/parse";
+import {
+  getListTitle,
+  getToDoItems,
+  toggleItem,
+  deleteItem,
+} from "../services/toBuyService";
 import styled from "styled-components";
 import InputForm from "../components/InputForm";
 import ToDoItem from "../components/ToDoItem";
@@ -27,63 +32,51 @@ export default function ToBuyList() {
   // State (store data)
   const [tasks, setTasks] = useState([]);
   const [listTitle, setListTitle] = useState("");
+  const [loading, setLoading] = useState(true);
 
   // Get listId from the URL
   const { listId } = useParams();
 
   // Effect (runs whenever listId changes)
   useEffect(() => {
-    fetchListTitle();
-    readTodos();
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        const [listData, itemsData] = await Promise.all([
+          getListTitle(listId),
+          getToDoItems(listId),
+        ]);
+
+        setListTitle(listData.title);
+        setTasks(itemsData);
+      } catch (error) {
+        console.error("Error loading data: " + error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
   }, [listId]);
 
-  // Database functions
-  const fetchListTitle = async () => {
-    const query = new Parse.Query("ToDoList");
-    try {
-      const specificList = await query.get(listId);
-      setListTitle(specificList.get("title"));
-    } catch (error) {
-      console.error("Error fetching list title: ", error);
-      setListTitle("Shopping List"); // fallback
-    }
+  const refreshItems = async () => {
+    const items = await getToDoItems(listId);
+    setTasks(items);
   };
 
-  const readTodos = async () => {
-    const currentUser = Parse.User.current();
-    const currenList = new Parse.Object("ToDoList"); // pointer to the current list
-    currenList.id = listId;
-
-    if (currentUser) {
-      const query = new Parse.Query("ToDoItem");
-      query.equalTo("owner", currentUser); // check to which user item belongs to
-      query.equalTo("list", currenList); // check to which list item belongs to
-      query.ascending("isPurchased"); // sort by if the item is bought
-      query.addDescending("createdAt");
-
-      try {
-        const results = await query.find();
-        setTasks(results);
-      } catch (error) {
-        console.error("Error reading todos: ", error);
-      }
-    }
-  };
-
-  const toggleTask = async (task) => {
+  const handleToggle = async (task) => {
     try {
-      task.set("isPurchased", !task.get("isPurchased"));
-      await task.save();
-      readTodos(); // refresh list
+      await toggleItem(task.id);
+      refreshItems(); // refresh list
     } catch (error) {
       console.error("Error updating task: ", error);
     }
   };
 
-  const deleteTask = async (task) => {
+  const handleDelete = async (task) => {
     try {
-      await task.destroy();
-      readTodos(); // refresh list
+      await deleteItem(task.id);
+      refreshItems(); // refresh list
     } catch (error) {
       console.error("Error deleting task: ", error);
     }
@@ -93,10 +86,10 @@ export default function ToBuyList() {
     <PageContainer>
       <BackButton />
       <h2>{listTitle}</h2>
-      <InputForm readTodos={readTodos} listId={listId} />
+      <InputForm onTaskAdded={refreshItems} listId={listId} />
 
       <div style={{ marginTop: "20px" }}>
-        {tasks.length === 0 ? (
+        {!loading && tasks.length === 0 ? (
           <p
             style={{
               textAlign: "center",
@@ -112,8 +105,8 @@ export default function ToBuyList() {
               <ToDoItem
                 key={task.id}
                 task={task}
-                onToggle={() => toggleTask(task)}
-                onDelete={() => deleteTask(task)}
+                onToggle={() => handleToggle(task)}
+                onDelete={() => handleDelete(task)}
               />
             ))}
           </ul>

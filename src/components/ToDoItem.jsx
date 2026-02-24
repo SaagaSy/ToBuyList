@@ -18,8 +18,8 @@ export default function ToDoItem(props) {
   const toggleItem = props.onToggle;
 
   // read values
-  const description = item.get("task");
-  const isBought = item.get("isPurchased");
+  const description = item.task;
+  const isBought = item.isPurchased;
 
   return (
     <ItemLine>

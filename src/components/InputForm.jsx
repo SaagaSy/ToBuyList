@@ -1,7 +1,7 @@
 // Handles adding new items to buy
 
 import { useState } from "react";
-import Parse from "../services/parse";
+import { createToDoItem } from "../services/toBuyService";
 import styled from "styled-components";
 import Button from "./Button";
 
@@ -22,27 +22,14 @@ const StyledInput = styled.input`
   flex-grow: 1;
 `;
 
-function InputForm({ readTodos, listId }) {
+function InputForm({ onTaskAdded, listId }) {
   const [task, setTask] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault(); // prevents default behavior of the form, i.e. submitting
     try {
-      const ToDoItem = Parse.Object.extend("ToDoItem");
-      const toDoItem = new ToDoItem();
-
-      toDoItem.set("task", task);
-      toDoItem.set("isPurchased", false);
-      const currentUser = Parse.User.current();
-      toDoItem.set("owner", currentUser);
-
-      // Pointer to match item with specific list
-      const ListPointer = new Parse.Object("ToDoList");
-      ListPointer.id = listId; // id passed from parent
-      toDoItem.set("list", ListPointer);
-
-      await toDoItem.save();
-      readTodos(); // refresh list
+      await createToDoItem(task, listId);
+      onTaskAdded(); // refresh list
       setTask(""); /// clear input box
     } catch (error) {
       console.error("Error adding item: ", error);

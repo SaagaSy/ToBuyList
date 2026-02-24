@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import Parse from "../services/parse";
+import { logoutUser } from "../services/authService";
 import styled from "styled-components";
 import Button from "./Button";
 
@@ -42,7 +42,7 @@ const RightSection = styled.div`
 export default function NavBar({ currentUser }) {
   const handleLogOut = async () => {
     try {
-      await Parse.User.logOut(); // log out from backend
+      await logoutUser();
       window.location.href = "/"; // force browser to reload
     } catch (error) {
       console.error("Error logging out: ", error);

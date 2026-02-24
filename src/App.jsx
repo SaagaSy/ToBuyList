@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { getCurrentUser } from "./services/authService";
 import Parse from "./services/parse";
 import "./App.css";
 import NavBar from "./components/NavBar";
@@ -27,7 +28,7 @@ body {
 
 function App() {
   // Global state for tracking if user is logged in
-  const [currentUser, setCurrentUser] = useState(Parse.User.current());
+  const [currentUser, setCurrentUser] = useState(getCurrentUser());
 
   return (
     <BrowserRouter>

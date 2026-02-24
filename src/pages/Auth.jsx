@@ -1,7 +1,7 @@
 // Handles login and sign up
 
 import React, { useState } from "react";
-import Parse from "../services/parse";
+import { loginUser, signUpUser } from "../services/authService";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import Button from "../components/Button";
@@ -51,7 +51,7 @@ export default function Auth({ setCurrentUser }) {
 
   const handleLogin = async () => {
     try {
-      const user = await Parse.User.logIn(username, password);
+      const user = await loginUser(username, password);
       setCurrentUser(user);
       navigate("/lists");
     } catch (error) {
@@ -61,10 +61,7 @@ export default function Auth({ setCurrentUser }) {
 
   const handleSignUp = async () => {
     try {
-      const user = new Parse.User();
-      user.setUsername(username);
-      user.setPassword(password);
-      await user.signUp();
+      const user = await signUpUser(username, password);
       setCurrentUser(user);
       navigate("/lists");
     } catch (error) {

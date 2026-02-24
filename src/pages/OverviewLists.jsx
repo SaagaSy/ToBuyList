@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import Parse from "../services/parse";
+import { getLists, createList, deleteList } from "../services/toBuyService";
 import styled from "styled-components";
 import Button from "../components/Button";
 
@@ -37,8 +37,17 @@ const StyledInput = styled.input`
   flex-grow: 1;
 `;
 
+const ListItem = styled.li`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 5px;
+  border-bottom: 1px solid #eee;
+`;
+
 const ListLink = styled(Link)`
-  display: block;
+  flex-grow: 1;
   background: #fffefb;
   border: 1px solid #ccc;
   padding: 15px;
@@ -63,25 +72,34 @@ export default function OverviewLists() {
 
   // Database functions
   const readLists = async () => {
-    const user = Parse.User.current();
-    const query = new Parse.Query("ToDoList");
-    query.equalTo("owner", user); // check for privacy
-    query.descending("createdAt");
-    const results = await query.find();
-    setLists(results);
+    try {
+      const myLists = await getLists();
+      setLists(myLists);
+    } catch (error) {
+      console.error("Error fetching lists: ", error);
+    }
   };
 
-  const createList = async (e) => {
+  const handleCreateList = async (e) => {
     e.preventDefault();
     if (!newListName) return;
 
-    const ToDoList = Parse.Object.extend("ToDoList");
-    const newList = new ToDoList();
-    newList.set("title", newListName);
-    newList.set("owner", Parse.User.current());
-    await newList.save();
-    setNewListName("");
-    readLists();
+    try {
+      await createList(newListName);
+      setNewListName("");
+      readLists(); // refresh
+    } catch (error) {
+      alert("Error creating list: " + error.message);
+    }
+  };
+
+  const handleDeleteList = async (listId) => {
+    try {
+      await deleteList(listId);
+      readLists();
+    } catch (error) {
+      alert("Error deleting list: " + error.message);
+    }
   };
 
   return (
@@ -89,7 +107,7 @@ export default function OverviewLists() {
       <h2>My Shopping Lists</h2>
 
       {/* Form to create a new list */}
-      <Form onSubmit={createList}>
+      <Form onSubmit={handleCreateList}>
         <StyledInput
           value={newListName}
           onChange={(e) => setNewListName(e.target.value)}
@@ -101,9 +119,14 @@ export default function OverviewLists() {
       {/* Show user's lists */}
       <ul style={{ listStyle: "none", padding: "1rem" }}>
         {lists.map((list) => (
-          <li key={list.id}>
-            <ListLink to={`/list/${list.id}`}>{list.get("title")}</ListLink>
-          </li>
+          <ListItem key={list.id}>
+            <ListLink to={`/list/${list.id}`}>{list.title}</ListLink>
+            <Button
+              text="Delete"
+              variant="secondary"
+              onClick={() => handleDeleteList(list.id)}
+            />
+          </ListItem>
         ))}
       </ul>
     </PageContainer>
