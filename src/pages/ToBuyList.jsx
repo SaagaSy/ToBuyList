@@ -33,18 +33,19 @@ export default function ToBuyList() {
 
   // Effect (runs whenever listId changes)
   useEffect(() => {
-    fetchListTitle();
+    readListTitle();
     readTodos();
   }, [listId]);
 
   // Database functions
-  const fetchListTitle = async () => {
+  const readListTitle = async () => {
     const query = new Parse.Query("ToDoList");
+    query.select("title");
     try {
       const specificList = await query.get(listId);
       setListTitle(specificList.get("title"));
     } catch (error) {
-      console.error("Error fetching list title: ", error);
+      console.error("Error reading list title: ", error);
       setListTitle("Shopping List"); // fallback
     }
   };
@@ -60,6 +61,7 @@ export default function ToBuyList() {
       query.equalTo("list", currenList); // check to which list item belongs to
       query.ascending("isPurchased"); // sort by if the item is bought
       query.addDescending("createdAt");
+      query.select("task", "isPurchased", "createdAt");
 
       try {
         const results = await query.find();
