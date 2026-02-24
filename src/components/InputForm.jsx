@@ -19,6 +19,10 @@ const StyledInput = styled.input`
   border: 1px solid #ccc;
   border-radius: 5px;
   flex-grow: 1;
+  &:focus {
+    outline: none;
+    border-color: #eb8a02;
+  }
 `;
 
 export default function InputForm({ onSubmit, placeholder, buttonText }) {

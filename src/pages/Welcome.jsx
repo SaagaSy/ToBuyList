@@ -9,7 +9,6 @@ max-width: 60%;
 width: 90%;
 margin: 0 auto;
 padding: 2rem,
-background-color: white;
 border-radius: 8px;
 box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 text-align: center;

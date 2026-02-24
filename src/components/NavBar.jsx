@@ -14,7 +14,6 @@ const NavContainer = styled.nav`
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
-  z-index: 1000;
   margin-bottom: 2rem;
 `;
 
@@ -27,6 +26,7 @@ const NavLink = styled(Link)`
     color: white;
   }
 `;
+
 const LeftSection = styled.div`
   display: flex;
   align-items: center;

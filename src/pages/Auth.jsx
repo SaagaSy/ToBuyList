@@ -48,7 +48,6 @@ const ErrorMessage = styled.p`
   font-size: 0.9rem;
   text-align: center;
   margin: 0 0 1.5rem 0;
-  min-height: 1.2em;
 `;
 
 const ButtonGroup = styled.div`
