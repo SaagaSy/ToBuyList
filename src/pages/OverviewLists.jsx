@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { getLists, createList, deleteList } from "../services/toBuyService";
 import styled from "styled-components";
 import Button from "../components/Button";
+import InputForm from "../components/InputForm";
 
 const PageContainer = styled.div`
 max-width: 60%;
@@ -18,23 +19,6 @@ h2{
   padding-top: 2rem;
   margin-bottom: 2rem;
 }
-`;
-
-const Form = styled.form`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  margin: 2rem;
-`;
-
-const StyledInput = styled.input`
-  padding: 10px;
-  height: 40px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  flex-grow: 1;
 `;
 
 const ListItem = styled.li`
@@ -64,7 +48,6 @@ const ListLink = styled(Link)`
 
 export default function OverviewLists() {
   const [lists, setLists] = useState([]);
-  const [newListName, setNewListName] = useState("");
 
   useEffect(() => {
     readLists();
@@ -80,13 +63,12 @@ export default function OverviewLists() {
     }
   };
 
-  const handleCreateList = async (e) => {
+  const handleCreateList = async (listTitle) => {
     e.preventDefault();
-    if (!newListName) return;
+    if (!listTitle) return;
 
     try {
-      await createList(newListName);
-      setNewListName("");
+      await createList(listTitle);
       readLists(); // refresh
     } catch (error) {
       alert("Error creating list: " + error.message);
@@ -107,14 +89,11 @@ export default function OverviewLists() {
       <h2>My Shopping Lists</h2>
 
       {/* Form to create a new list */}
-      <Form onSubmit={handleCreateList}>
-        <StyledInput
-          value={newListName}
-          onChange={(e) => setNewListName(e.target.value)}
-          placeholder="New List Name (e.g. Groceries)"
-        />
-        <Button type="submit" text="Create" />
-      </Form>
+      <InputForm
+        onSubmit={handleCreateList}
+        placeholder="New List Name (e.g. Groceries)"
+        buttonText="Create"
+      />
 
       {/* Show user's lists */}
       <ul style={{ listStyle: "none", padding: "1rem" }}>

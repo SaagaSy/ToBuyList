@@ -1,7 +1,6 @@
 // Handles adding new items to buy
 
 import { useState } from "react";
-import { createToDoItem } from "../services/toBuyService";
 import styled from "styled-components";
 import Button from "./Button";
 
@@ -22,15 +21,14 @@ const StyledInput = styled.input`
   flex-grow: 1;
 `;
 
-export default function InputForm({ onTaskAdded, listId }) {
-  const [task, setTask] = useState("");
+export default function InputForm({ onSubmit, placeholder, buttonText }) {
+  const [inputValue, setInputValue] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault(); // prevents default behavior of the form, i.e. submitting
     try {
-      await createToDoItem(task, listId);
-      onTaskAdded(); // refresh list
-      setTask(""); /// clear input box
+      await onSubmit(inputValue);
+      setInputValue(""); /// clear input box
     } catch (error) {
       console.error("Error adding item: ", error);
       alert("Error: " + error.message);
@@ -41,12 +39,12 @@ export default function InputForm({ onTaskAdded, listId }) {
     <FormContainer onSubmit={handleSubmit}>
       <StyledInput
         type="text"
-        placeholder="Add item"
-        value={task}
-        onChange={(e) => setTask(e.target.value)}
+        placeholder={placeholder || "Add item"}
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
         required
       />
-      <Button type="submit" text="Add" />
+      <Button type="submit" text={buttonText || "Add"} />
     </FormContainer>
   );
 }

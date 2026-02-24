@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import {
+  createToDoItem,
   getListTitle,
   getToDoItems,
   toggleItem,
@@ -64,6 +65,11 @@ export default function ToBuyList() {
     setTasks(items);
   };
 
+  const handleAddItem = async (taskName) => {
+    await createToDoItem(taskName, listId);
+    refreshItems();
+  };
+
   const handleToggle = async (task) => {
     try {
       await toggleItem(task.id);
@@ -86,7 +92,11 @@ export default function ToBuyList() {
     <PageContainer>
       <BackButton />
       <h2>{listTitle}</h2>
-      <InputForm onTaskAdded={refreshItems} listId={listId} />
+      <InputForm
+        onSubmit={handleAddItem}
+        placeholder="Add item"
+        buttonText="Add"
+      />
 
       <div style={{ marginTop: "20px" }}>
         {!loading && tasks.length === 0 ? (
