@@ -22,7 +22,7 @@ const StyledInput = styled.input`
   flex-grow: 1;
 `;
 
-function InputForm({ onTaskAdded, listId }) {
+export default function InputForm({ onTaskAdded, listId }) {
   const [task, setTask] = useState("");
 
   const handleSubmit = async (e) => {
@@ -50,5 +50,3 @@ function InputForm({ onTaskAdded, listId }) {
     </FormContainer>
   );
 }
-
-export default InputForm;

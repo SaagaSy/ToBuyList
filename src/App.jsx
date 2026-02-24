@@ -1,8 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState } from "react";
 import { getCurrentUser } from "./services/authService";
-import Parse from "./services/parse";
-import "./App.css";
 import NavBar from "./components/NavBar";
 import ToBuyList from "./pages/ToBuyList";
 import Welcome from "./pages/Welcome";
@@ -10,7 +8,7 @@ import Auth from "./pages/Auth";
 import OverviewLists from "./pages/OverviewLists";
 import { createGlobalStyle } from "styled-components";
 
-// Handles layout, routing and structure of UI
+// Handles layout, routing and struscture of UI
 
 // Global styles
 const GlobalStyle = createGlobalStyle`
