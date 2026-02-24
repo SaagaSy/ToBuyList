@@ -12,7 +12,7 @@ const StyledButton = styled.button`
   transition: opacity 0.2s ease-in-out;
 
   ${(props) =>
-    props.variant === "secondary"
+    props.$variant === "secondary"
       ? ` /* Secondary */
   background-color: transparent;
   border: 2px solid #c0392b;
@@ -35,7 +35,7 @@ const StyledButton = styled.button`
 
   /* Neutral */
   ${(props) =>
-    props.variant === "neutral" &&
+    props.$variant === "neutral" &&
     `
   background-color:#8ab8b8;
   border: none;
@@ -53,7 +53,7 @@ export default function Button({
   variant = "primary",
 }) {
   return (
-    <StyledButton onClick={onClick} type={type} variant={variant}>
+    <StyledButton onClick={onClick} type={type} $variant={variant}>
       {text}
     </StyledButton>
   );

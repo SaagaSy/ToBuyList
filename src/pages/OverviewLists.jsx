@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import Parse from "../services/parse";
+import { getLists, createList, deleteList } from "../services/toBuyService";
 import styled from "styled-components";
 import Button from "../components/Button";
+import InputForm from "../components/InputForm";
 
 const PageContainer = styled.div`
 max-width: 60%;
@@ -20,25 +21,17 @@ h2{
 }
 `;
 
-const Form = styled.form`
+const ListItem = styled.li`
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   gap: 10px;
-  margin: 2rem;
-`;
-
-const StyledInput = styled.input`
-  padding: 10px;
-  height: 40px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  flex-grow: 1;
+  padding: 5px;
+  border-bottom: 1px solid #eee;
 `;
 
 const ListLink = styled(Link)`
-  display: block;
+  flex-grow: 1;
   background: #fffefb;
   border: 1px solid #ccc;
   padding: 15px;
@@ -55,58 +48,75 @@ const ListLink = styled(Link)`
 
 export default function OverviewLists() {
   const [lists, setLists] = useState([]);
-  const [newListName, setNewListName] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    readLists();
+    const initialLoadData = async () => {
+      setLoading(true);
+      await refreshLists();
+      setLoading(false);
+    };
+    initialLoadData();
   }, []);
 
   // Database functions
-  const readLists = async () => {
-    const user = Parse.User.current();
-    const query = new Parse.Query("ToDoList");
-    query.equalTo("owner", user); // check for privacy
-    query.select("title");
-    query.descending("createdAt");
-    const results = await query.find();
-    setLists(results);
+  const refreshLists = async () => {
+    try {
+      const myLists = await getLists();
+      setLists(myLists);
+    } catch (error) {
+      console.error("Error fetching lists: ", error);
+    }
   };
 
-  const createList = async (e) => {
-    e.preventDefault();
-    if (!newListName) return;
+  const handleCreateList = async (listTitle) => {
+    if (!listTitle) return;
 
-    const ToDoList = Parse.Object.extend("ToDoList");
-    const newList = new ToDoList();
-    newList.set("title", newListName);
-    newList.set("owner", Parse.User.current());
-    await newList.save();
-    setNewListName("");
-    readLists();
+    try {
+      await createList(listTitle);
+      refreshLists(); // refresh
+    } catch (error) {
+      alert("Error creating list: " + error.message);
+    }
+  };
+
+  const handleDeleteList = async (listId) => {
+    try {
+      await deleteList(listId);
+      refreshLists();
+    } catch (error) {
+      alert("Error deleting list: " + error.message);
+    }
   };
 
   return (
     <PageContainer>
-      <h2>My Shopping Lists</h2>
+      {!loading && (
+        <>
+          <h2>My Shopping Lists</h2>
 
-      {/* Form to create a new list */}
-      <Form onSubmit={createList}>
-        <StyledInput
-          value={newListName}
-          onChange={(e) => setNewListName(e.target.value)}
-          placeholder="New List Name (e.g. Groceries)"
-        />
-        <Button type="submit" text="Create" />
-      </Form>
+          {/* Form to create a new list */}
+          <InputForm
+            onSubmit={handleCreateList}
+            placeholder="New List Name (e.g. Groceries)"
+            buttonText="Create"
+          />
 
-      {/* Show user's lists */}
-      <ul style={{ listStyle: "none", padding: "1rem" }}>
-        {lists.map((list) => (
-          <li key={list.id}>
-            <ListLink to={`/list/${list.id}`}>{list.get("title")}</ListLink>
-          </li>
-        ))}
-      </ul>
+          {/* Show user's lists */}
+          <ul style={{ listStyle: "none", padding: "1rem" }}>
+            {lists.map((list) => (
+              <ListItem key={list.id}>
+                <ListLink to={`/list/${list.id}`}>{list.title}</ListLink>
+                <Button
+                  text="Delete"
+                  variant="secondary"
+                  onClick={() => handleDeleteList(list.id)}
+                />
+              </ListItem>
+            ))}
+          </ul>
+        </>
+      )}
     </PageContainer>
   );
 }

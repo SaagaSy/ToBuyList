@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useState, useEffect } from "react";
-import Parse from "./services/parse";
-import "./App.css";
+import { useState } from "react";
+import { getCurrentUser } from "./services/authService";
 import NavBar from "./components/NavBar";
 import ToBuyList from "./pages/ToBuyList";
 import Welcome from "./pages/Welcome";
@@ -9,7 +8,7 @@ import Auth from "./pages/Auth";
 import OverviewLists from "./pages/OverviewLists";
 import { createGlobalStyle } from "styled-components";
 
-// Handles layout, routing and structure of UI
+// Handles layout, routing and struscture of UI
 
 // Global styles
 const GlobalStyle = createGlobalStyle`
@@ -27,7 +26,7 @@ body {
 
 function App() {
   // Global state for tracking if user is logged in
-  const [currentUser, setCurrentUser] = useState(Parse.User.current());
+  const [currentUser, setCurrentUser] = useState(getCurrentUser());
 
   return (
     <BrowserRouter>

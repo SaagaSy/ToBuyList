@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import Parse from "../services/parse";
+import {
+  createToDoItem,
+  getListTitle,
+  getToDoItems,
+  toggleItem,
+  deleteItem,
+} from "../services/toBuyService";
 import styled from "styled-components";
 import InputForm from "../components/InputForm";
 import ToDoItem from "../components/ToDoItem";
@@ -27,65 +33,56 @@ export default function ToBuyList() {
   // State (store data)
   const [tasks, setTasks] = useState([]);
   const [listTitle, setListTitle] = useState("");
+  const [loading, setLoading] = useState(true);
 
   // Get listId from the URL
   const { listId } = useParams();
 
   // Effect (runs whenever listId changes)
   useEffect(() => {
-    readListTitle();
-    readTodos();
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        const [listData, itemsData] = await Promise.all([
+          getListTitle(listId),
+          getToDoItems(listId),
+        ]);
+
+        setListTitle(listData.title);
+        setTasks(itemsData);
+      } catch (error) {
+        console.error("Error loading data: " + error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
   }, [listId]);
 
-  // Database functions
-  const readListTitle = async () => {
-    const query = new Parse.Query("ToDoList");
-    query.select("title");
-    try {
-      const specificList = await query.get(listId);
-      setListTitle(specificList.get("title"));
-    } catch (error) {
-      console.error("Error reading list title: ", error);
-      setListTitle("Shopping List"); // fallback
-    }
+  const refreshItems = async () => {
+    const items = await getToDoItems(listId);
+    setTasks(items);
   };
 
-  const readTodos = async () => {
-    const currentUser = Parse.User.current();
-    const currenList = new Parse.Object("ToDoList"); // pointer to the current list
-    currenList.id = listId;
-
-    if (currentUser) {
-      const query = new Parse.Query("ToDoItem");
-      query.equalTo("owner", currentUser); // check to which user item belongs to
-      query.equalTo("list", currenList); // check to which list item belongs to
-      query.ascending("isPurchased"); // sort by if the item is bought
-      query.addDescending("createdAt");
-      query.select("task", "isPurchased", "createdAt");
-
-      try {
-        const results = await query.find();
-        setTasks(results);
-      } catch (error) {
-        console.error("Error reading todos: ", error);
-      }
-    }
+  const handleAddItem = async (taskName) => {
+    await createToDoItem(taskName, listId);
+    refreshItems();
   };
 
-  const toggleTask = async (task) => {
+  const handleToggle = async (task) => {
     try {
-      task.set("isPurchased", !task.get("isPurchased"));
-      await task.save();
-      readTodos(); // refresh list
+      await toggleItem(task.id);
+      refreshItems(); // refresh list
     } catch (error) {
       console.error("Error updating task: ", error);
     }
   };
 
-  const deleteTask = async (task) => {
+  const handleDelete = async (task) => {
     try {
-      await task.destroy();
-      readTodos(); // refresh list
+      await deleteItem(task.id);
+      refreshItems(); // refresh list
     } catch (error) {
       console.error("Error deleting task: ", error);
     }
@@ -93,34 +90,42 @@ export default function ToBuyList() {
 
   return (
     <PageContainer>
-      <BackButton />
-      <h2>{listTitle}</h2>
-      <InputForm readTodos={readTodos} listId={listId} />
+      {!loading && (
+        <>
+          <BackButton />
+          <h2>{listTitle}</h2>
+          <InputForm
+            onSubmit={handleAddItem}
+            placeholder="Add item"
+            buttonText="Add"
+          />
 
-      <div style={{ marginTop: "20px" }}>
-        {tasks.length === 0 ? (
-          <p
-            style={{
-              textAlign: "center",
-              color: "#888",
-              paddingBottom: "1.5rem",
-            }}
-          >
-            No items added yet!
-          </p>
-        ) : (
-          <ul style={{ listStyle: "none", padding: 10 }}>
-            {tasks.map((task) => (
-              <ToDoItem
-                key={task.id}
-                task={task}
-                onToggle={() => toggleTask(task)}
-                onDelete={() => deleteTask(task)}
-              />
-            ))}
-          </ul>
-        )}
-      </div>
+          <div style={{ marginTop: "20px" }}>
+            {tasks.length === 0 ? (
+              <p
+                style={{
+                  textAlign: "center",
+                  color: "#888",
+                  paddingBottom: "1.5rem",
+                }}
+              >
+                No items added yet!
+              </p>
+            ) : (
+              <ul style={{ listStyle: "none", padding: 10 }}>
+                {tasks.map((task) => (
+                  <ToDoItem
+                    key={task.id}
+                    task={task}
+                    onToggle={() => handleToggle(task)}
+                    onDelete={() => handleDelete(task)}
+                  />
+                ))}
+              </ul>
+            )}
+          </div>
+        </>
+      )}
     </PageContainer>
   );
 }
