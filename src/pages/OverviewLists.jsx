@@ -66,6 +66,7 @@ export default function OverviewLists() {
     const user = Parse.User.current();
     const query = new Parse.Query("ToDoList");
     query.equalTo("owner", user); // check for privacy
+    query.select("title");
     query.descending("createdAt");
     const results = await query.find();
     setLists(results);
