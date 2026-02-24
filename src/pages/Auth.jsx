@@ -35,6 +35,20 @@ const StyledInput = styled.input`
   border: 1px solid #ccc;
   border-radius: 5px;
   flex-grow: 1;
+  transition: border-color 0.2s;
+  border: 1px solid #ccc;
+  &:focus {
+    outline: none;
+    border-color: #eb8a02;
+  }
+`;
+
+const ErrorMessage = styled.p`
+  color: #c0392b;
+  font-size: 0.9rem;
+  text-align: center;
+  margin: 0 0 1.5rem 0;
+  min-height: 1.2em;
 `;
 
 const ButtonGroup = styled.div`
@@ -47,25 +61,46 @@ const ButtonGroup = styled.div`
 export default function Auth({ setCurrentUser }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  const handleInputChange = (setter, value) => {
+    setter(value);
+    if (error) setError("");
+  };
+
   const handleLogin = async () => {
+    if (!username || !password) {
+      setError("Please fill in both username and password.");
+      return;
+    }
+
     try {
       const user = await loginUser(username, password);
       setCurrentUser(user);
       navigate("/lists");
-    } catch (error) {
-      alert("Error: " + error.message);
+    } catch (err) {
+      setError(err.message);
     }
   };
 
   const handleSignUp = async () => {
+    if (!username || !password) {
+      setError("Please fill in both username and password.");
+      return;
+    }
+
+    if (password.length < 4) {
+      setError("Password must be at least 4 characters.");
+      return;
+    }
+
     try {
       const user = await signUpUser(username, password);
       setCurrentUser(user);
       navigate("/lists");
-    } catch (error) {
-      alert("Error: " + error.message);
+    } catch (err) {
+      setError(err.message);
     }
   };
 
@@ -75,17 +110,23 @@ export default function Auth({ setCurrentUser }) {
       <h2>Login / Sign Up</h2>
       <InputGroup>
         <StyledInput
+          type="username"
           placeholder="Username"
           value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          onChange={(e) => handleInputChange(setUsername, e.target.value)}
+          $hasError={!!error}
         />
         <StyledInput
           type="password"
           placeholder="Password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => handleInputChange(setPassword, e.target.value)}
+          $hasError={!!error}
         />
       </InputGroup>
+
+      <ErrorMessage>{error}</ErrorMessage>
+
       <ButtonGroup>
         <Button onClick={handleLogin} text="Log In" />
         <Button onClick={handleSignUp} text="Sign Up" />
