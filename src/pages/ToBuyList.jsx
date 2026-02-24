@@ -90,38 +90,42 @@ export default function ToBuyList() {
 
   return (
     <PageContainer>
-      <BackButton />
-      <h2>{listTitle}</h2>
-      <InputForm
-        onSubmit={handleAddItem}
-        placeholder="Add item"
-        buttonText="Add"
-      />
+      {!loading && (
+        <>
+          <BackButton />
+          <h2>{listTitle}</h2>
+          <InputForm
+            onSubmit={handleAddItem}
+            placeholder="Add item"
+            buttonText="Add"
+          />
 
-      <div style={{ marginTop: "20px" }}>
-        {!loading && tasks.length === 0 ? (
-          <p
-            style={{
-              textAlign: "center",
-              color: "#888",
-              paddingBottom: "1.5rem",
-            }}
-          >
-            No items added yet!
-          </p>
-        ) : (
-          <ul style={{ listStyle: "none", padding: 10 }}>
-            {tasks.map((task) => (
-              <ToDoItem
-                key={task.id}
-                task={task}
-                onToggle={() => handleToggle(task)}
-                onDelete={() => handleDelete(task)}
-              />
-            ))}
-          </ul>
-        )}
-      </div>
+          <div style={{ marginTop: "20px" }}>
+            {tasks.length === 0 ? (
+              <p
+                style={{
+                  textAlign: "center",
+                  color: "#888",
+                  paddingBottom: "1.5rem",
+                }}
+              >
+                No items added yet!
+              </p>
+            ) : (
+              <ul style={{ listStyle: "none", padding: 10 }}>
+                {tasks.map((task) => (
+                  <ToDoItem
+                    key={task.id}
+                    task={task}
+                    onToggle={() => handleToggle(task)}
+                    onDelete={() => handleDelete(task)}
+                  />
+                ))}
+              </ul>
+            )}
+          </div>
+        </>
+      )}
     </PageContainer>
   );
 }

@@ -48,13 +48,19 @@ const ListLink = styled(Link)`
 
 export default function OverviewLists() {
   const [lists, setLists] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    readLists();
+    const initialLoadData = async () => {
+      setLoading(true);
+      await refreshLists();
+      setLoading(false);
+    };
+    initialLoadData();
   }, []);
 
   // Database functions
-  const readLists = async () => {
+  const refreshLists = async () => {
     try {
       const myLists = await getLists();
       setLists(myLists);
@@ -64,12 +70,11 @@ export default function OverviewLists() {
   };
 
   const handleCreateList = async (listTitle) => {
-    e.preventDefault();
     if (!listTitle) return;
 
     try {
       await createList(listTitle);
-      readLists(); // refresh
+      refreshLists(); // refresh
     } catch (error) {
       alert("Error creating list: " + error.message);
     }
@@ -78,7 +83,7 @@ export default function OverviewLists() {
   const handleDeleteList = async (listId) => {
     try {
       await deleteList(listId);
-      readLists();
+      refreshLists();
     } catch (error) {
       alert("Error deleting list: " + error.message);
     }
@@ -86,28 +91,32 @@ export default function OverviewLists() {
 
   return (
     <PageContainer>
-      <h2>My Shopping Lists</h2>
+      {!loading && (
+        <>
+          <h2>My Shopping Lists</h2>
 
-      {/* Form to create a new list */}
-      <InputForm
-        onSubmit={handleCreateList}
-        placeholder="New List Name (e.g. Groceries)"
-        buttonText="Create"
-      />
+          {/* Form to create a new list */}
+          <InputForm
+            onSubmit={handleCreateList}
+            placeholder="New List Name (e.g. Groceries)"
+            buttonText="Create"
+          />
 
-      {/* Show user's lists */}
-      <ul style={{ listStyle: "none", padding: "1rem" }}>
-        {lists.map((list) => (
-          <ListItem key={list.id}>
-            <ListLink to={`/list/${list.id}`}>{list.title}</ListLink>
-            <Button
-              text="Delete"
-              variant="secondary"
-              onClick={() => handleDeleteList(list.id)}
-            />
-          </ListItem>
-        ))}
-      </ul>
+          {/* Show user's lists */}
+          <ul style={{ listStyle: "none", padding: "1rem" }}>
+            {lists.map((list) => (
+              <ListItem key={list.id}>
+                <ListLink to={`/list/${list.id}`}>{list.title}</ListLink>
+                <Button
+                  text="Delete"
+                  variant="secondary"
+                  onClick={() => handleDeleteList(list.id)}
+                />
+              </ListItem>
+            ))}
+          </ul>
+        </>
+      )}
     </PageContainer>
   );
 }
