@@ -42,12 +42,10 @@ export default function ToBuyList() {
     const loadData = async () => {
       setLoading(true);
       try {
-        const [listData, itemsData] = await Promise.all([
-          getListTitle(listId),
-          getToDoItems(listId),
-        ]);
-
+        const listData = await getListTitle(listId);
         setListTitle(listData.title);
+
+        const itemsData = await getToDoItems(listId);
         setTasks(itemsData);
       } catch (error) {
         console.error("Error loading data: " + error);
